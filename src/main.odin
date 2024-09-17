@@ -14,7 +14,6 @@ Enemy :: struct {
 	health: i32,
 }
 
-
 draw_player :: proc(player: ^Player) {
 	rl.DrawRectangleRec(player.body, rl.GREEN)
 }
@@ -45,7 +44,7 @@ main :: proc() {
 			player.body.x = min(player.body.x + 10, WIDTH - (player.body.width + 8))
 		}
 
-		enemy.body.y += 3 
+		enemy.body.y += 3
 
 
 		rl.BeginDrawing()
