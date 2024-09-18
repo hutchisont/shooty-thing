@@ -43,7 +43,11 @@ tick_player :: proc() {
 }
 
 tick_enemy :: proc(enemy: ^Enemy) {
-	enemy.body.y += f32(enemy.speed)
+	if enemy.body.y >= HEIGHT {
+		enemy.body.y = 0
+	} else {
+		enemy.body.y += f32(enemy.speed)
+	}
 }
 
 tick_enemies :: proc() {
