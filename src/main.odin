@@ -24,6 +24,7 @@ GameState :: enum {
 	Running,
 	Won,
 	Lost,
+	Exit,
 }
 
 Game :: struct {
@@ -89,23 +90,48 @@ state_main_menu :: proc() {
 
 state_won :: proc() {
 	rl.DrawText("You Won!", WIDTH / 2 - 150, HEIGHT / 2 - 100, 72, rl.BLACK)
+	rl.DrawText("Press 1 to play again", 125, 150, 32, rl.BLACK)
+	rl.DrawText("Press 2 to exit", 125, 200, 32, rl.BLACK)
+
+	if rl.IsKeyReleased(.ONE) {
+		reset_game_state()
+	}
+	if rl.IsKeyReleased(.TWO) {
+		TheGame.state = .Exit
+	}
 }
 
 state_lost :: proc() {
 	rl.DrawText("You Lost!", WIDTH / 2 - 150, HEIGHT / 2 - 100, 72, rl.BLACK)
+	rl.DrawText("Press 1 to play again", 125, 150, 32, rl.BLACK)
+	rl.DrawText("Press 2 to exit", 125, 200, 32, rl.BLACK)
+
+	if rl.IsKeyReleased(.ONE) {
+		reset_game_state()
+	}
+	if rl.IsKeyReleased(.TWO) {
+		TheGame.state = .Exit
+	}
 }
 
-game_tick :: proc() {
-	switch TheGame.state {
-	case .MainMenu:
-		state_main_menu()
-	case .Running:
-		state_running()
-	case .Won:
-		state_won()
-	case .Lost:
-		state_lost()
+reset_game_state :: proc() {
+	delete(TheGame.enemies)
+
+	TheGame.player = Player {
+		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
+		health = 100,
+		speed  = 10,
 	}
+	TheGame.enemies = make([dynamic]Enemy)
+	enemy := Enemy {
+		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
+		color  = rl.RED,
+		health = 100,
+		speed  = 3,
+		damage = 110,
+	}
+	append(&TheGame.enemies, enemy)
+	TheGame.state = .Running
 }
 
 set_initial_game_state :: proc() {
@@ -144,7 +170,18 @@ main :: proc() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.GRAY)
 
-		game_tick()
+		switch TheGame.state {
+		case .MainMenu:
+			state_main_menu()
+		case .Running:
+			state_running()
+		case .Won:
+			state_won()
+		case .Lost:
+			state_lost()
+		case .Exit:
+			return
+		}
 
 		rl.DrawFPS(2, 2)
 		rl.EndDrawing()
