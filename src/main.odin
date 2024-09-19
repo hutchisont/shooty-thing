@@ -1,5 +1,6 @@
 package main
 
+import "core:time"
 import rl "vendor:raylib"
 
 WIDTH :: 720
@@ -29,6 +30,17 @@ Enemy :: struct {
 	damage: i32,
 }
 
+create_basic_enemy :: proc() -> Enemy {
+	spawn_x := rl.GetRandomValue(0, WIDTH - 30)
+	return Enemy {
+		body = rl.Rectangle{f32(spawn_x), 0, 25, 25},
+		color = rl.RED,
+		health = 100,
+		speed = 200,
+		damage = 2,
+	}
+}
+
 Projectile :: struct {
 	body:   rl.Rectangle,
 	color:  rl.Color,
@@ -45,10 +57,12 @@ GameState :: enum {
 }
 
 Game :: struct {
-	player:      Player,
-	enemies:     [dynamic]Enemy,
-	projectiles: [dynamic]Projectile,
-	state:       GameState,
+	player:           Player,
+	enemies:          [dynamic]Enemy,
+	projectiles:      [dynamic]Projectile,
+	state:            GameState,
+	game_time:        f32,
+	spawn_accum_time: f32,
 }
 
 TheGame := Game{}
@@ -119,6 +133,15 @@ tick_enemies :: proc() {
 		} else {
 			unordered_remove(&TheGame.enemies, index)
 		}
+	}
+
+	spawn_time :: .75
+
+	TheGame.spawn_accum_time += rl.GetFrameTime()
+
+	if TheGame.spawn_accum_time >= .75 {
+		TheGame.spawn_accum_time = 0
+		append(&TheGame.enemies, create_basic_enemy())
 	}
 }
 
@@ -200,37 +223,29 @@ reset_game_state :: proc() {
 
 	TheGame.player = create_player()
 	TheGame.enemies = make([dynamic]Enemy)
-	enemy := Enemy {
-		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
-		color  = rl.RED,
-		health = 100,
-		speed  = 200,
-		damage = 110,
-	}
-	append(&TheGame.enemies, enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .Running
+	TheGame.spawn_accum_time = 0
+	TheGame.game_time = 0
 }
 
 set_initial_game_state :: proc() {
+	now := time.now()
+	rl.SetRandomSeed(u32(time.to_unix_seconds(now)))
+
 	TheGame.player = create_player()
 	TheGame.enemies = make([dynamic]Enemy)
-	enemy := Enemy {
-		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
-		color  = rl.RED,
-		health = 100,
-		speed  = 200,
-		damage = 110,
-	}
-	append(&TheGame.enemies, enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .MainMenu
+	TheGame.spawn_accum_time = 0
+	TheGame.game_time = 0
 }
 
 check_win_state :: proc() {
 	if len(TheGame.enemies) == 0 &&
 	   TheGame.player.health > 0 &&
-	   TheGame.state == .Running {
+	   TheGame.state == .Running &&
+	   TheGame.game_time > (60 * 3) {
 		TheGame.state = .Won
 	}
 }
@@ -249,6 +264,8 @@ main :: proc() {
 
 	for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
+
+		TheGame.game_time += rl.GetFrameTime()
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.GRAY)
