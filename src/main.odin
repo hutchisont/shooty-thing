@@ -59,18 +59,33 @@ tick_player :: proc() {
 	draw_player(pl)
 }
 
-tick_enemy :: proc(enemy: ^Enemy) {
+tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool) {
 	if enemy.body.y >= HEIGHT {
 		TheGame.player.health -= enemy.damage
+		alive = false
 	} else {
-		enemy.body.y += enemy.speed
+		enemy.body.y += (enemy.speed * rl.GetFrameTime())
+		alive = true
 	}
+
+	return alive
 }
 
 tick_enemies :: proc() {
-	for &enemy in TheGame.enemies {
-		tick_enemy(&enemy)
-		draw_enemy(&enemy)
+	to_remove := make([dynamic]int)
+	defer delete(to_remove)
+
+	for &enemy, index in TheGame.enemies {
+		alive := tick_enemy(&enemy)
+		if alive {
+			draw_enemy(&enemy)
+		} else {
+			append(&to_remove, index)
+		}
+	}
+
+	for value in to_remove {
+		unordered_remove(&TheGame.enemies, value)
 	}
 }
 
@@ -145,7 +160,7 @@ set_initial_game_state :: proc() {
 		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
 		color  = rl.RED,
 		health = 100,
-		speed  = 3,
+		speed  = 200,
 		damage = 110,
 	}
 	append(&TheGame.enemies, enemy)
