@@ -21,6 +21,17 @@ create_basic_enemy :: proc() -> Enemy {
 	}
 }
 
+create_beefy_enemy :: proc() -> Enemy {
+	spawn_x := rl.GetRandomValue(0, WIDTH - 105)
+	return Enemy {
+		body = rl.Rectangle{f32(spawn_x), 0, 100, 75},
+		color = rl.YELLOW,
+		health = 250,
+		speed = 70,
+		damage = 50,
+	}
+}
+
 tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool) {
 	if enemy.body.y >= HEIGHT {
 		TheGame.player.health -= enemy.damage
@@ -43,12 +54,20 @@ tick_enemies :: proc() {
 	}
 
 	spawn_time :: 1.25
+	special_spawn_time :: spawn_time * 7
 
-	TheGame.spawn_accum_time += rl.GetFrameTime()
+	frame_time := rl.GetFrameTime()
+
+	TheGame.spawn_accum_time += frame_time
+	TheGame.special_spawn_accum_time += frame_time
 
 	if TheGame.spawn_accum_time >= spawn_time {
 		TheGame.spawn_accum_time = 0
 		append(&TheGame.enemies, create_basic_enemy())
+	}
+	if TheGame.special_spawn_accum_time >= special_spawn_time {
+		TheGame.special_spawn_accum_time = 0
+		append(&TheGame.enemies, create_beefy_enemy())
 	}
 }
 

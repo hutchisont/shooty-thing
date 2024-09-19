@@ -15,12 +15,13 @@ GameState :: enum {
 }
 
 Game :: struct {
-	player:           Player,
-	enemies:          [dynamic]Enemy,
-	projectiles:      [dynamic]Projectile,
-	state:            GameState,
-	game_time:        f32,
-	spawn_accum_time: f32,
+	player:                   Player,
+	enemies:                  [dynamic]Enemy,
+	projectiles:              [dynamic]Projectile,
+	state:                    GameState,
+	game_time:                f32,
+	spawn_accum_time:         f32,
+	special_spawn_accum_time: f32,
 }
 
 TheGame := Game{}
@@ -78,8 +79,9 @@ reset_game_state :: proc() {
 	TheGame.enemies = make([dynamic]Enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .Running
-	TheGame.spawn_accum_time = 0
 	TheGame.game_time = 0
+	TheGame.spawn_accum_time = 0
+	TheGame.special_spawn_accum_time = 0
 }
 
 set_initial_game_state :: proc() {
@@ -90,8 +92,9 @@ set_initial_game_state :: proc() {
 	TheGame.enemies = make([dynamic]Enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .MainMenu
-	TheGame.spawn_accum_time = 0
 	TheGame.game_time = 0
+	TheGame.spawn_accum_time = 0
+	TheGame.special_spawn_accum_time = 0
 }
 
 check_win_state :: proc() {
