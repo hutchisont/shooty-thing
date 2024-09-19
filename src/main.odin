@@ -13,7 +13,7 @@ Player :: struct {
 }
 
 create_player :: proc() -> Player {
-	return Player{
+	return Player {
 		body = {WIDTH - 100, HEIGHT - 100, 50, 50},
 		health = 100,
 		speed = 400,
@@ -241,6 +241,14 @@ set_initial_game_state :: proc() {
 	TheGame.state = .MainMenu
 }
 
+check_win_state :: proc() {
+	if len(TheGame.enemies) == 0 &&
+	   TheGame.player.health > 0 &&
+	   TheGame.state == .Running {
+		TheGame.state = .Won
+	}
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
@@ -259,9 +267,7 @@ main :: proc() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.GRAY)
 
-		if len(TheGame.enemies) == 0 && TheGame.player.health > 0 {
-			TheGame.state = .Won
-		}
+		check_win_state()
 
 		switch TheGame.state {
 		case .MainMenu:
