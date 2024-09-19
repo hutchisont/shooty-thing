@@ -80,6 +80,11 @@ state_running :: proc() {
 
 state_main_menu :: proc() {
 	rl.DrawText("Main Menu", 100, 100, 32, rl.BLACK)
+	rl.DrawText("Press 1 to play", 125, 150, 24, rl.BLACK)
+
+	if rl.IsKeyReleased(.ONE) {
+		TheGame.state = .Running
+	}
 }
 
 state_won :: proc() {
