@@ -9,6 +9,7 @@ Player :: struct {
 	body:   rl.Rectangle,
 	health: i32,
 	speed:  f32,
+	accumulated_time:   f64,
 }
 
 Enemy :: struct {
@@ -51,6 +52,19 @@ draw_enemy :: proc(enemy: ^Enemy) {
 	rl.DrawRectangleRec(enemy.body, enemy.color)
 }
 
+draw_projectile :: proc(projectile: ^Projectile) {
+	rl.DrawRectangleRec(projectile.body, projectile.color)
+}
+
+create_projectile :: proc() -> Projectile {
+	return Projectile {
+		body = rl.Rectangle{TheGame.player.body.x, TheGame.player.body.y, 10, 20},
+		color = rl.PURPLE,
+		speed = 400,
+		damage = 15,
+	}
+}
+
 tick_player :: proc() {
 	pl := &TheGame.player
 	if rl.IsKeyDown(.A) {
@@ -64,19 +78,27 @@ tick_player :: proc() {
 		TheGame.state = .Lost
 	}
 
+	fire_threshold :: 0.3
+
+	pl.accumulated_time += f64(rl.GetFrameTime())
+	if pl.accumulated_time > fire_threshold {
+		append(&TheGame.projectiles, create_projectile())
+		pl.accumulated_time = 0
+	}
+
 	draw_player(pl)
 }
 
 tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool) {
 	if enemy.body.y >= HEIGHT {
 		TheGame.player.health -= enemy.damage
-		alive = false
+		return false
+	} else if enemy.health <= 0 {
+		return false
 	} else {
-		enemy.body.y += (enemy.speed * rl.GetFrameTime())
-		alive = true
+		enemy.body.y += enemy.speed * rl.GetFrameTime()
+		return true
 	}
-
-	return alive
 }
 
 tick_enemies :: proc() {
@@ -84,8 +106,7 @@ tick_enemies :: proc() {
 	defer delete(to_remove)
 
 	for &enemy, index in TheGame.enemies {
-		alive := tick_enemy(&enemy)
-		if alive {
+		if tick_enemy(&enemy) {
 			draw_enemy(&enemy)
 		} else {
 			append(&to_remove, index)
@@ -97,9 +118,45 @@ tick_enemies :: proc() {
 	}
 }
 
+tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
+	if projectile.body.y < 0 {
+		return false
+	} else {
+		projectile.body.y -= projectile.body.y * rl.GetFrameTime()
+	}
+
+	for &enemy in TheGame.enemies {
+		if rl.CheckCollisionRecs(enemy.body, projectile.body) {
+			enemy.health -= projectile.damage
+			return false
+		}
+	}
+
+
+	return true
+}
+
+tick_projectiles :: proc() {
+	to_remove := make([dynamic]int)
+	defer delete(to_remove)
+
+	for &projectile, index in TheGame.projectiles {
+		if tick_projectile(&projectile) {
+			draw_projectile(&projectile)
+		} else {
+			append(&to_remove, index)
+		}
+	}
+
+	for value in to_remove {
+		unordered_remove(&TheGame.projectiles, value)
+	}
+}
+
 state_running :: proc() {
 	tick_player()
 	tick_enemies()
+	tick_projectiles()
 }
 
 state_main_menu :: proc() {
@@ -199,6 +256,10 @@ main :: proc() {
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.GRAY)
+
+		if len(TheGame.enemies) == 0 && TheGame.player.health > 0 {
+			TheGame.state = .Won
+		}
 
 		switch TheGame.state {
 		case .MainMenu:
