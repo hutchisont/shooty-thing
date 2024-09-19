@@ -8,7 +8,7 @@ HEIGHT :: 1280
 Player :: struct {
 	body:   rl.Rectangle,
 	health: i32,
-	speed: f32,
+	speed:  f32,
 }
 
 Enemy :: struct {
@@ -43,7 +43,7 @@ draw_enemy :: proc(enemy: ^Enemy) {
 }
 
 tick_player :: proc() {
-	pl := TheGame.player
+	pl := &TheGame.player
 	if rl.IsKeyDown(.A) {
 		pl.body.x = max(pl.body.x - pl.speed, 8)
 	}
@@ -55,7 +55,7 @@ tick_player :: proc() {
 		TheGame.state = .Lost
 	}
 
-	draw_player(&pl)
+	draw_player(pl)
 }
 
 tick_enemy :: proc(enemy: ^Enemy) {
@@ -79,8 +79,8 @@ state_running :: proc() {
 }
 
 state_main_menu :: proc() {
-	rl.DrawText("Main Menu", 100, 100, 32, rl.BLACK)
-	rl.DrawText("Press 1 to play", 125, 150, 24, rl.BLACK)
+	rl.DrawText("Main Menu", 100, 100, 42, rl.BLACK)
+	rl.DrawText("Press 1 to play", 125, 150, 32, rl.BLACK)
 
 	if rl.IsKeyReleased(.ONE) {
 		TheGame.state = .Running
@@ -121,7 +121,7 @@ main :: proc() {
 	TheGame.player = Player {
 		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
 		health = 100,
-		speed = 10,
+		speed  = 10,
 	}
 	TheGame.enemies = make([dynamic]Enemy)
 	enemy := Enemy {
