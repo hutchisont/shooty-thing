@@ -133,7 +133,7 @@ tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
 	if projectile.body.y < 0 {
 		return false
 	} else {
-		projectile.body.y -= projectile.body.y * rl.GetFrameTime()
+		projectile.body.y -= projectile.speed * rl.GetFrameTime()
 	}
 
 	for &enemy in TheGame.enemies {
