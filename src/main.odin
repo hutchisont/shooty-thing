@@ -19,6 +19,13 @@ Enemy :: struct {
 	damage: i32,
 }
 
+Projectile :: struct {
+	body:   rl.Rectangle,
+	color:  rl.Color,
+	speed:  f32,
+	damage: i32,
+}
+
 GameState :: enum {
 	MainMenu,
 	Running,
@@ -28,9 +35,10 @@ GameState :: enum {
 }
 
 Game :: struct {
-	player:  Player,
-	enemies: [dynamic]Enemy,
-	state:   GameState,
+	player:      Player,
+	enemies:     [dynamic]Enemy,
+	projectiles: [dynamic]Projectile,
+	state:       GameState,
 }
 
 TheGame := Game{}
@@ -131,6 +139,7 @@ state_lost :: proc() {
 
 reset_game_state :: proc() {
 	delete(TheGame.enemies)
+	delete(TheGame.projectiles)
 
 	TheGame.player = Player {
 		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
@@ -146,6 +155,7 @@ reset_game_state :: proc() {
 		damage = 110,
 	}
 	append(&TheGame.enemies, enemy)
+	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .Running
 }
 
@@ -164,6 +174,7 @@ set_initial_game_state :: proc() {
 		damage = 110,
 	}
 	append(&TheGame.enemies, enemy)
+	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .MainMenu
 }
 
