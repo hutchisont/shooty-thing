@@ -6,10 +6,19 @@ WIDTH :: 720
 HEIGHT :: 1280
 
 Player :: struct {
-	body:   rl.Rectangle,
-	health: i32,
-	speed:  f32,
-	accumulated_time:   f64,
+	body:             rl.Rectangle,
+	health:           i32,
+	speed:            f32,
+	accumulated_time: f32,
+}
+
+create_player :: proc() -> Player {
+	return Player{
+		body = {WIDTH - 100, HEIGHT - 100, 50, 50},
+		health = 100,
+		speed = 400,
+		accumulated_time = 0,
+	}
 }
 
 Enemy :: struct {
@@ -67,11 +76,13 @@ create_projectile :: proc() -> Projectile {
 
 tick_player :: proc() {
 	pl := &TheGame.player
+
+	frame_time := rl.GetFrameTime()
 	if rl.IsKeyDown(.A) {
-		pl.body.x = max(pl.body.x - pl.speed, 8)
+		pl.body.x = max(pl.body.x - (pl.speed * frame_time), 8)
 	}
 	if rl.IsKeyDown(.D) {
-		pl.body.x = min(pl.body.x + pl.speed, WIDTH - (pl.body.width + 8))
+		pl.body.x = min(pl.body.x + (pl.speed * frame_time), WIDTH - (pl.body.width + 8))
 	}
 
 	if pl.health <= 0 {
@@ -80,7 +91,7 @@ tick_player :: proc() {
 
 	fire_threshold :: 0.3
 
-	pl.accumulated_time += f64(rl.GetFrameTime())
+	pl.accumulated_time += frame_time
 	if pl.accumulated_time > fire_threshold {
 		append(&TheGame.projectiles, create_projectile())
 		pl.accumulated_time = 0
@@ -131,7 +142,6 @@ tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
 			return false
 		}
 	}
-
 
 	return true
 }
@@ -202,11 +212,7 @@ reset_game_state :: proc() {
 	delete(TheGame.enemies)
 	delete(TheGame.projectiles)
 
-	TheGame.player = Player {
-		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
-		health = 100,
-		speed  = 10,
-	}
+	TheGame.player = create_player()
 	TheGame.enemies = make([dynamic]Enemy)
 	enemy := Enemy {
 		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
@@ -221,11 +227,7 @@ reset_game_state :: proc() {
 }
 
 set_initial_game_state :: proc() {
-	TheGame.player = Player {
-		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
-		health = 100,
-		speed  = 10,
-	}
+	TheGame.player = create_player()
 	TheGame.enemies = make([dynamic]Enemy)
 	enemy := Enemy {
 		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
