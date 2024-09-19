@@ -105,9 +105,13 @@ state_running :: proc() {
 state_main_menu :: proc() {
 	rl.DrawText("Main Menu", 100, 100, 42, rl.BLACK)
 	rl.DrawText("Press 1 to play", 125, 150, 32, rl.BLACK)
+	rl.DrawText("Press 2 to exit", 125, 200, 32, rl.BLACK)
 
 	if rl.IsKeyReleased(.ONE) {
 		TheGame.state = .Running
+	}
+	if rl.IsKeyReleased(.TWO) {
+		TheGame.state = .Exit
 	}
 }
 
