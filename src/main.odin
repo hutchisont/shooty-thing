@@ -113,19 +113,12 @@ tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool) {
 }
 
 tick_enemies :: proc() {
-	to_remove := make([dynamic]int)
-	defer delete(to_remove)
-
-	for &enemy, index in TheGame.enemies {
+	#reverse for &enemy, index in TheGame.enemies {
 		if tick_enemy(&enemy) {
 			draw_enemy(&enemy)
 		} else {
-			append(&to_remove, index)
+			unordered_remove(&TheGame.enemies, index)
 		}
-	}
-
-	for value in to_remove {
-		unordered_remove(&TheGame.enemies, value)
 	}
 }
 
@@ -147,19 +140,12 @@ tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
 }
 
 tick_projectiles :: proc() {
-	to_remove := make([dynamic]int)
-	defer delete(to_remove)
-
-	for &projectile, index in TheGame.projectiles {
+	#reverse for &projectile, index in TheGame.projectiles {
 		if tick_projectile(&projectile) {
 			draw_projectile(&projectile)
 		} else {
-			append(&to_remove, index)
+			unordered_remove(&TheGame.projectiles, index)
 		}
-	}
-
-	for value in to_remove {
-		unordered_remove(&TheGame.projectiles, value)
 	}
 }
 
