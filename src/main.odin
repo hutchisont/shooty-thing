@@ -151,7 +151,7 @@ reset_game_state :: proc() {
 		body   = rl.Rectangle{WIDTH / 2, 0, 25, 25},
 		color  = rl.RED,
 		health = 100,
-		speed  = 3,
+		speed  = 200,
 		damage = 110,
 	}
 	append(&TheGame.enemies, enemy)
