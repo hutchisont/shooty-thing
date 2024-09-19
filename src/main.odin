@@ -108,16 +108,7 @@ game_tick :: proc() {
 	}
 }
 
-main :: proc() {
-	rl.SetTraceLogLevel(.ERROR)
-	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
-
-	rl.InitWindow(WIDTH, HEIGHT, "SIC")
-	defer rl.CloseWindow()
-
-	rl.SetWindowPosition(WIDTH * 2, HEIGHT / 2)
-	rl.SetTargetFPS(144)
-
+set_initial_game_state :: proc() {
 	TheGame.player = Player {
 		body   = rl.Rectangle{WIDTH - 100, HEIGHT - 100, 50, 50},
 		health = 100,
@@ -133,6 +124,19 @@ main :: proc() {
 	}
 	append(&TheGame.enemies, enemy)
 	TheGame.state = .MainMenu
+}
+
+main :: proc() {
+	rl.SetTraceLogLevel(.ERROR)
+	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
+
+	rl.InitWindow(WIDTH, HEIGHT, "SIC")
+	defer rl.CloseWindow()
+
+	rl.SetWindowPosition(WIDTH * 2, HEIGHT / 2)
+	rl.SetTargetFPS(144)
+
+	set_initial_game_state()
 
 	for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
