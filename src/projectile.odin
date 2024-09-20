@@ -3,28 +3,29 @@ package main
 import rl "vendor:raylib"
 
 base_size : [2]f32: {10, 20}
+base_dmg :: 15
 
 Projectile :: struct {
 	size_mult: f32,
 	body:   rl.Rectangle,
 	color:  rl.Color,
 	speed:  f32,
-	damage: i32,
+	damage: f32,
 }
 
 create_projectile :: proc() -> Projectile {
-	width := base_size.x + (base_size.x * TheGame.player.projectile_size_mult)
+	width := base_size.x * TheGame.player.projectile_size_mult
 	centered_x := (TheGame.player.body.x + (TheGame.player.body.width / 2)) - (width / 2)
 	return Projectile {
 		body = rl.Rectangle {
 			centered_x,
 			TheGame.player.body.y,
 			width,
-			base_size.y + (base_size.y * TheGame.player.projectile_size_mult),
+			base_size.y * TheGame.player.projectile_size_mult,
 		},
 		color = rl.PURPLE,
 		speed = 400,
-		damage = 15,
+		damage = base_dmg * TheGame.player.projectile_dmg_mult,
 	}
 }
 

@@ -3,11 +3,12 @@ package main
 import rl "vendor:raylib"
 
 Enemy :: struct {
-	body:   rl.Rectangle,
-	color:  rl.Color,
-	health: i32,
-	speed:  f32,
-	damage: i32,
+	body:      rl.Rectangle,
+	color:     rl.Color,
+	health:    f32,
+	speed:     f32,
+	damage:    i32,
+	exp_value: u32,
 }
 
 create_basic_enemy :: proc() -> Enemy {
@@ -16,8 +17,9 @@ create_basic_enemy :: proc() -> Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 25, 25},
 		color = rl.RED,
 		health = 25,
-		speed = 200,
+		speed = 175,
 		damage = 2,
+		exp_value = 10,
 	}
 }
 
@@ -26,34 +28,39 @@ create_beefy_enemy :: proc() -> Enemy {
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 100, 75},
 		color = rl.YELLOW,
-		health = 250,
+		health = 200,
 		speed = 70,
 		damage = 50,
+		exp_value = 45,
 	}
 }
 
-tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool) {
+tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool, killed_by_player: bool) {
 	if enemy.body.y >= HEIGHT {
 		TheGame.player.health -= enemy.damage
-		return false
+		return false, false
 	} else if enemy.health <= 0 {
-		return false
+		return false, true
 	} else {
 		enemy.body.y += enemy.speed * rl.GetFrameTime()
-		return true
+		return true, false
 	}
 }
 
 tick_enemies :: proc() {
 	#reverse for &enemy, index in TheGame.enemies {
-		if tick_enemy(&enemy) {
+		alive, killed_by_player := tick_enemy(&enemy)
+		if alive {
 			draw_enemy(&enemy)
 		} else {
+			if killed_by_player {
+				gain_exp_player(enemy.exp_value)
+			}
 			unordered_remove(&TheGame.enemies, index)
 		}
 	}
 
-	spawn_time :: 1.25
+	spawn_time :: 1.75
 	special_spawn_time :: spawn_time * 7
 
 	frame_time := rl.GetFrameTime()
@@ -74,4 +81,3 @@ tick_enemies :: proc() {
 draw_enemy :: proc(enemy: ^Enemy) {
 	rl.DrawRectangleRec(enemy.body, enemy.color)
 }
-

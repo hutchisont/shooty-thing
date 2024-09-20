@@ -1,5 +1,8 @@
 package main
 
+import "core:fmt"
+import "core:strconv"
+import "core:strings"
 import "core:time"
 import rl "vendor:raylib"
 
@@ -117,6 +120,9 @@ main :: proc() {
 	rl.SetTargetFPS(144)
 
 	set_initial_game_state()
+	ulevel: [5]byte
+	slevel: string
+	clevel: cstring
 
 	for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
@@ -140,6 +146,12 @@ main :: proc() {
 		case .Exit:
 			return
 		}
+
+		level := TheGame.player.level
+		strconv.itoa(ulevel[:], int(level))
+		slevel = strings.clone_from_bytes(ulevel[:], context.temp_allocator)
+		clevel = strings.clone_to_cstring(slevel, context.temp_allocator)
+		rl.DrawText(clevel, 10, HEIGHT - 50, 32, rl.BLACK)
 
 		rl.DrawFPS(2, 2)
 		rl.EndDrawing()
