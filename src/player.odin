@@ -3,10 +3,12 @@ package main
 import rl "vendor:raylib"
 
 Player :: struct {
-	body:             rl.Rectangle,
-	health:           i32,
-	speed:            f32,
-	accumulated_time: f32,
+	body:                      rl.Rectangle,
+	health:                    i32,
+	speed:                     f32,
+	accumulated_time:          f32,
+	projectile_size_mult:      f32,
+	projectile_fire_threshold: f32,
 }
 
 create_player :: proc() -> Player {
@@ -33,10 +35,8 @@ tick_player :: proc() {
 		TheGame.state = .Lost
 	}
 
-	fire_threshold :: 0.3
-
 	pl.accumulated_time += frame_time
-	if pl.accumulated_time > fire_threshold {
+	if pl.accumulated_time > pl.projectile_fire_threshold {
 		append(&TheGame.projectiles, create_projectile())
 		pl.accumulated_time = 0
 	}
@@ -47,4 +47,3 @@ tick_player :: proc() {
 draw_player :: proc(player: ^Player) {
 	rl.DrawRectangleRec(player.body, rl.GREEN)
 }
-

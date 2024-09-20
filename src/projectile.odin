@@ -2,7 +2,10 @@ package main
 
 import rl "vendor:raylib"
 
+base_size : [2]f32: {10, 20}
+
 Projectile :: struct {
+	size_mult: f32,
 	body:   rl.Rectangle,
 	color:  rl.Color,
 	speed:  f32,
@@ -10,12 +13,14 @@ Projectile :: struct {
 }
 
 create_projectile :: proc() -> Projectile {
+	width := base_size.x + (base_size.x * TheGame.player.projectile_size_mult)
+	centered_x := (TheGame.player.body.x + (TheGame.player.body.width / 2)) - (width / 2)
 	return Projectile {
 		body = rl.Rectangle {
-			TheGame.player.body.x + (TheGame.player.body.width / 2) - 5,
+			centered_x,
 			TheGame.player.body.y,
-			10,
-			20,
+			width,
+			base_size.y + (base_size.y * TheGame.player.projectile_size_mult),
 		},
 		color = rl.PURPLE,
 		speed = 400,
