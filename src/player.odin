@@ -9,6 +9,7 @@ Player :: struct {
 	accumulated_time:          f32,
 	projectile_size_mult:      f32,
 	projectile_fire_threshold: f32,
+	projectile_fire_mult:      f32,
 }
 
 create_player :: proc() -> Player {
@@ -36,7 +37,8 @@ tick_player :: proc() {
 	}
 
 	pl.accumulated_time += frame_time
-	if pl.accumulated_time > pl.projectile_fire_threshold {
+	if pl.accumulated_time >
+	   (pl.projectile_fire_threshold - (pl.projectile_fire_threshold * pl.projectile_fire_mult)) {
 		append(&TheGame.projectiles, create_projectile())
 		pl.accumulated_time = 0
 	}
