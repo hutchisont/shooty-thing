@@ -11,7 +11,12 @@ Projectile :: struct {
 
 create_projectile :: proc() -> Projectile {
 	return Projectile {
-		body = rl.Rectangle{TheGame.player.body.x, TheGame.player.body.y, 10, 20},
+		body = rl.Rectangle {
+			TheGame.player.body.x + (TheGame.player.body.width / 2) - 5,
+			TheGame.player.body.y,
+			10,
+			20,
+		},
 		color = rl.PURPLE,
 		speed = 400,
 		damage = 15,
