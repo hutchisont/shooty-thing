@@ -38,7 +38,7 @@ create_beefy_enemy :: proc() -> Enemy {
 create_speedy_enemy :: proc() -> Enemy {
 	spawn_x := rl.GetRandomValue(10, WIDTH - 10)
 	return Enemy {
-		body = rl.Rectangle{f32(spawn_x), 0, 15, 15},
+		body = rl.Rectangle{f32(spawn_x), 0, 15, 45},
 		color = rl.BLUE,
 		health = 15,
 		speed = 375,
