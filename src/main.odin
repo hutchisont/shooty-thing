@@ -69,9 +69,18 @@ state_level_up :: proc() {
 	}
 
 	options_text: [3]cstring
-	options_text[0] = fmt.ctprintf("Press 1 %s", TheGame.level_options_text[TheGame.level_up_options[0]])
-	options_text[1] = fmt.ctprintf("Press 2 %s", TheGame.level_options_text[TheGame.level_up_options[1]])
-	options_text[2] = fmt.ctprintf("Press 3 %s", TheGame.level_options_text[TheGame.level_up_options[2]])
+	options_text[0] = fmt.ctprintf(
+		"Press 1 %s",
+		TheGame.level_options_text[TheGame.level_up_options[0]],
+	)
+	options_text[1] = fmt.ctprintf(
+		"Press 2 %s",
+		TheGame.level_options_text[TheGame.level_up_options[1]],
+	)
+	options_text[2] = fmt.ctprintf(
+		"Press 3 %s",
+		TheGame.level_options_text[TheGame.level_up_options[2]],
+	)
 
 	rl.DrawText(options_text[0], 125, 150, 32, rl.BLACK)
 	rl.DrawText(options_text[1], 125, 200, 32, rl.BLACK)
@@ -181,6 +190,13 @@ check_win_state :: proc() {
 	}
 }
 
+draw_player_status :: proc() {
+	clevel := fmt.ctprintf("Lvl: %d", TheGame.player.level)
+	chp := fmt.ctprintf("Hp: %d", TheGame.player.health)
+	rl.DrawText(clevel, 10, HEIGHT - 100, 32, rl.BLACK)
+	rl.DrawText(chp, 10, HEIGHT - 50, 32, rl.BLACK)
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
@@ -192,9 +208,6 @@ main :: proc() {
 	rl.SetTargetFPS(144)
 
 	set_initial_game_state()
-	ulevel: [5]byte
-	slevel: string
-	clevel: cstring
 
 	for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
@@ -211,21 +224,19 @@ main :: proc() {
 			state_main_menu()
 		case .Running:
 			state_running()
+			draw_player_status()
 		case .LevelUp:
 			state_level_up()
+			draw_player_status()
 		case .Won:
 			state_won()
+			draw_player_status()
 		case .Lost:
 			state_lost()
+			draw_player_status()
 		case .Exit:
 			return
 		}
-
-		level := TheGame.player.level
-		strconv.itoa(ulevel[:], int(level))
-		slevel = strings.clone_from_bytes(ulevel[:], context.temp_allocator)
-		clevel = strings.clone_to_cstring(slevel, context.temp_allocator)
-		rl.DrawText(clevel, 10, HEIGHT - 50, 32, rl.BLACK)
 
 		rl.DrawFPS(2, 2)
 		rl.EndDrawing()
