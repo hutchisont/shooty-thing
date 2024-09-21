@@ -12,7 +12,7 @@ Enemy :: struct {
 }
 
 create_basic_enemy :: proc() -> Enemy {
-	spawn_x := rl.GetRandomValue(0, WIDTH - 30)
+	spawn_x := rl.GetRandomValue(10, WIDTH - 35)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 25, 25},
 		color = rl.RED,
@@ -24,7 +24,7 @@ create_basic_enemy :: proc() -> Enemy {
 }
 
 create_beefy_enemy :: proc() -> Enemy {
-	spawn_x := rl.GetRandomValue(0, WIDTH - 105)
+	spawn_x := rl.GetRandomValue(10, WIDTH - 110)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 100, 75},
 		color = rl.YELLOW,
@@ -32,6 +32,18 @@ create_beefy_enemy :: proc() -> Enemy {
 		speed = 70,
 		damage = 50,
 		exp_value = 45,
+	}
+}
+
+create_speedy_enemy :: proc() -> Enemy {
+	spawn_x := rl.GetRandomValue(10, WIDTH - 10)
+	return Enemy {
+		body = rl.Rectangle{f32(spawn_x), 0, 15, 15},
+		color = rl.BLUE,
+		health = 15,
+		speed = 375,
+		damage = 1,
+		exp_value = 20,
 	}
 }
 
@@ -75,6 +87,7 @@ tick_enemies :: proc() {
 	if TheGame.special_spawn_accum_time >= special_spawn_time {
 		TheGame.special_spawn_accum_time = 0
 		append(&TheGame.enemies, create_beefy_enemy())
+		append(&TheGame.enemies, create_speedy_enemy())
 	}
 }
 
