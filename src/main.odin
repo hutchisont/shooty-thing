@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:math/rand"
 import "core:strconv"
 import "core:strings"
 import "core:time"
@@ -12,10 +13,20 @@ HEIGHT :: 1280
 GameState :: enum {
 	MainMenu,
 	Running,
+	LevelUp,
 	Won,
 	Lost,
 	Exit,
 }
+
+LevelOptions :: enum {
+	ProjectileSize,
+	FireRate,
+	Damage,
+	MoveSpeed,
+	BulletSpeed,
+}
+
 
 Game :: struct {
 	player:                   Player,
@@ -25,6 +36,8 @@ Game :: struct {
 	game_time:                f32,
 	spawn_accum_time:         f32,
 	special_spawn_accum_time: f32,
+	level_up_options:         [dynamic]LevelOptions,
+	level_options_text:       [LevelOptions]cstring,
 }
 
 TheGame := Game{}
@@ -33,6 +46,58 @@ state_running :: proc() {
 	tick_player()
 	tick_enemies()
 	tick_projectiles()
+}
+
+generate_random_level_options :: proc() {
+	option_count :: 3
+
+	gen: for option_count > len(TheGame.level_up_options) {
+		option := rand.choice_enum(LevelOptions)
+		for o in TheGame.level_up_options {
+			if option == o {
+				continue gen
+			}
+		}
+		append(&TheGame.level_up_options, option)
+	}
+}
+
+
+state_level_up :: proc() {
+	if 0 == len(TheGame.level_up_options) {
+		generate_random_level_options()
+	}
+
+	options_text: [3]cstring
+	options_text[0] = fmt.ctprintf("Press 1 %s", TheGame.level_options_text[TheGame.level_up_options[0]])
+	options_text[1] = fmt.ctprintf("Press 2 %s", TheGame.level_options_text[TheGame.level_up_options[1]])
+	options_text[2] = fmt.ctprintf("Press 3 %s", TheGame.level_options_text[TheGame.level_up_options[2]])
+
+	rl.DrawText(options_text[0], 125, 150, 32, rl.BLACK)
+	rl.DrawText(options_text[1], 125, 200, 32, rl.BLACK)
+	rl.DrawText(options_text[2], 125, 250, 32, rl.BLACK)
+
+	handled_input := false
+	picked_index := -1
+	if rl.IsKeyReleased(.ONE) {
+		handled_input = true
+		picked_index = 0
+	} else if rl.IsKeyReleased(.TWO) {
+		handled_input = true
+		picked_index = 1
+	} else if rl.IsKeyReleased(.THREE) {
+		handled_input = true
+		picked_index = 2
+	}
+
+
+	if handled_input {
+		apply_level_up_upgrade(TheGame.level_up_options[picked_index])
+		clear(&TheGame.level_up_options)
+		if 0 == TheGame.player.pending_levels {
+			TheGame.state = .Running
+		}
+	}
 }
 
 state_main_menu :: proc() {
@@ -75,12 +140,11 @@ state_lost :: proc() {
 }
 
 reset_game_state :: proc() {
-	delete(TheGame.enemies)
-	delete(TheGame.projectiles)
+	clear(&TheGame.enemies)
+	clear(&TheGame.projectiles)
+	clear(&TheGame.level_up_options)
 
 	TheGame.player = create_player()
-	TheGame.enemies = make([dynamic]Enemy)
-	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .Running
 	TheGame.game_time = 0
 	TheGame.spawn_accum_time = 0
@@ -98,6 +162,14 @@ set_initial_game_state :: proc() {
 	TheGame.game_time = 0
 	TheGame.spawn_accum_time = 0
 	TheGame.special_spawn_accum_time = 0
+	TheGame.level_up_options = make([dynamic]LevelOptions)
+	TheGame.level_options_text = {
+		.ProjectileSize = "to upgrade projectile size",
+		.FireRate       = "to upgrade fire rate",
+		.Damage         = "to upgrade damage",
+		.MoveSpeed      = "to upgrade move speed",
+		.BulletSpeed    = "to upgrade bullet speed",
+	}
 }
 
 check_win_state :: proc() {
@@ -139,6 +211,8 @@ main :: proc() {
 			state_main_menu()
 		case .Running:
 			state_running()
+		case .LevelUp:
+			state_level_up()
 		case .Won:
 			state_won()
 		case .Lost:

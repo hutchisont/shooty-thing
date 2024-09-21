@@ -24,7 +24,7 @@ create_projectile :: proc() -> Projectile {
 			base_size.y * TheGame.player.projectile_size_mult,
 		},
 		color = rl.PURPLE,
-		speed = 400,
+		speed = 400 * TheGame.player.projectile_speed_mult,
 		damage = base_dmg * TheGame.player.projectile_dmg_mult,
 	}
 }

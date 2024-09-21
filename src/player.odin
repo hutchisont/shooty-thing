@@ -8,21 +8,24 @@ Player :: struct {
 	speed:                     f32,
 	accumulated_time:          f32,
 	projectile_size_mult:      f32,
+	projectile_speed_mult:     f32,
 	projectile_dmg_mult:       f32,
 	projectile_fire_threshold: f32,
 	cur_exp:                   u32,
 	exp_to_level:              u32,
 	level:                     u32,
+	pending_levels:            u32,
 }
 
 create_player :: proc() -> Player {
 	return Player {
 		body = {WIDTH - 100, HEIGHT - 100, 50, 50},
 		health = 100,
-		speed = 400,
+		speed = 200,
 		exp_to_level = 75,
 		projectile_fire_threshold = 0.5,
 		projectile_size_mult = 1,
+		projectile_speed_mult = 1,
 		projectile_dmg_mult = 1,
 		level = 1,
 	}
@@ -31,16 +34,33 @@ create_player :: proc() -> Player {
 level_up_player :: proc() {
 	pl := &TheGame.player
 
-	// 5% bigger
-	pl.projectile_size_mult *= 1.05
+	pl.pending_levels += 1
 
-	// 5% more damage
-	pl.projectile_dmg_mult *= 1.05
+	TheGame.state = .LevelUp
+}
 
-	// 5% lower threshold
-	pl.projectile_fire_threshold = pl.projectile_fire_threshold * .95
-	pl.projectile_fire_threshold = rl.Clamp(pl.projectile_fire_threshold, .01, 5)
+apply_level_up_upgrade :: proc(upg: LevelOptions) {
+	pl := &TheGame.player
 
+	switch upg {
+	case .ProjectileSize:
+		// 10% bigger
+		pl.projectile_size_mult *= 1.10
+	case .FireRate:
+		// 10% lower threshold
+		pl.projectile_fire_threshold = rl.Clamp(pl.projectile_fire_threshold * .90, .01, 5)
+	case .Damage:
+		// 10% more damage
+		pl.projectile_dmg_mult *= 1.10
+	case .MoveSpeed:
+		// 10% faster
+		pl.speed *= 1.10
+	case .BulletSpeed:
+		// 10% faster
+		pl.projectile_speed_mult *= 1.10
+	}
+
+	pl.pending_levels -= 1
 	pl.level += 1
 }
 
