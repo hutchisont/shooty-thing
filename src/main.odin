@@ -197,6 +197,16 @@ draw_player_status :: proc() {
 	rl.DrawText(chp, 10, HEIGHT - 50, 32, rl.BLACK)
 }
 
+draw_all_entities :: proc() {
+	for &e in TheGame.enemies {
+		draw_enemy(&e)
+	}
+	for &p in TheGame.projectiles {
+		draw_projectile(&p)
+	}
+	draw_player(&TheGame.player)
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
@@ -224,18 +234,19 @@ main :: proc() {
 			state_main_menu()
 		case .Running:
 			state_running()
-			draw_player_status()
 		case .LevelUp:
+			draw_all_entities()
 			state_level_up()
-			draw_player_status()
 		case .Won:
 			state_won()
-			draw_player_status()
 		case .Lost:
 			state_lost()
-			draw_player_status()
 		case .Exit:
 			return
+		}
+
+		if TheGame.state != .MainMenu {
+			draw_player_status()
 		}
 
 		rl.DrawFPS(2, 2)
