@@ -9,6 +9,7 @@ import rl "vendor:raylib"
 
 WIDTH :: 720
 HEIGHT :: 1280
+GAME_DURATION_SEC :: 60 * 5
 
 GameState :: enum {
 	MainMenu,
@@ -179,7 +180,9 @@ set_initial_game_state :: proc() {
 }
 
 check_win_state :: proc() {
-	if TheGame.player.health > 0 && TheGame.state == .Running && TheGame.game_time > (60 * 5) {
+	if TheGame.player.health > 0 &&
+	   TheGame.state == .Running &&
+	   TheGame.game_time >= GAME_DURATION_SEC {
 		TheGame.state = .Won
 	}
 }
@@ -201,6 +204,32 @@ draw_all_entities :: proc() {
 	draw_player(&TheGame.player)
 }
 
+secs_to_mins_and_secs :: proc(seconds: i32) -> (mins: i32, secs: i32) {
+	secs = seconds % 60
+	mins = i32(seconds / 60)
+	return mins, secs
+}
+
+draw_countdown_text :: proc() {
+	FONT_SIZE :: 48
+	remaining := i32(GAME_DURATION_SEC - TheGame.game_time)
+	if 0 == remaining {
+		return
+	}
+	mins, secs := secs_to_mins_and_secs(remaining)
+	if 0 == mins {
+		text := fmt.ctprintf("%d", secs)
+		text_width := rl.MeasureText(text, FONT_SIZE)
+		x := (WIDTH - text_width) / 2
+		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
+	} else {
+		text := fmt.ctprintf("%d:%d", mins, secs)
+		text_width := rl.MeasureText(text, FONT_SIZE)
+		x := (WIDTH - text_width) / 2
+		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
+	}
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
@@ -216,8 +245,6 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
 
-		TheGame.game_time += rl.GetFrameTime()
-
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.GRAY)
 
@@ -227,10 +254,13 @@ main :: proc() {
 		case .MainMenu:
 			state_main_menu()
 		case .Running:
+			TheGame.game_time += rl.GetFrameTime()
 			state_running()
+			draw_countdown_text()
 		case .LevelUp:
 			draw_all_entities()
 			state_level_up()
+			draw_countdown_text()
 		case .Won:
 			state_won()
 		case .Lost:
