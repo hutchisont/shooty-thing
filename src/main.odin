@@ -168,9 +168,6 @@ set_initial_game_state :: proc() {
 	TheGame.enemies = make([dynamic]Enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .MainMenu
-	TheGame.game_time = 0
-	TheGame.spawn_accum_time = 0
-	TheGame.special_spawn_accum_time = 0
 	TheGame.level_up_options = make([dynamic]LevelOptions)
 	TheGame.level_options_text = {
 		.ProjectileSize = "to upgrade projectile size",
