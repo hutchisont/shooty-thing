@@ -185,7 +185,7 @@ check_win_state :: proc() {
 	if len(TheGame.enemies) == 0 &&
 	   TheGame.player.health > 0 &&
 	   TheGame.state == .Running &&
-	   TheGame.game_time > (60 * 3) {
+	   TheGame.game_time > (60 * 5) {
 		TheGame.state = .Won
 	}
 }
