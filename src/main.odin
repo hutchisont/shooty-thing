@@ -179,9 +179,7 @@ set_initial_game_state :: proc() {
 }
 
 check_win_state :: proc() {
-	if TheGame.player.health > 0 &&
-	   TheGame.state == .Running &&
-	   TheGame.game_time > (60 * 5) {
+	if TheGame.player.health > 0 && TheGame.state == .Running && TheGame.game_time > (60 * 5) {
 		TheGame.state = .Won
 	}
 }
