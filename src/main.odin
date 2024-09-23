@@ -223,7 +223,7 @@ draw_countdown_text :: proc() {
 		x := (WIDTH - text_width) / 2
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	} else {
-		text := fmt.ctprintf("%d:%d", mins, secs)
+		text := fmt.ctprintf("%d:%2d", mins, secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
