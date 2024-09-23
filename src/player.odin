@@ -98,5 +98,7 @@ tick_player :: proc() {
 }
 
 draw_player :: proc(player: ^Player) {
+	center := player.body.x + (player.body.width / 2)
+	rl.DrawLineEx({center, player.body.y}, {center, HEIGHT / 5}, 3, {0, 0, 0, 55})
 	rl.DrawRectangleRec(player.body, rl.GREEN)
 }
