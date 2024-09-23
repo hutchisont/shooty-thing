@@ -188,10 +188,13 @@ check_win_state :: proc() {
 }
 
 draw_player_status :: proc() {
+	FONT_SIZE :: 32
 	clevel := fmt.ctprintf("Lvl: %d", TheGame.player.level)
 	chp := fmt.ctprintf("Hp: %d", TheGame.player.health)
-	rl.DrawText(clevel, 10, HEIGHT - 100, 32, rl.BLACK)
-	rl.DrawText(chp, 10, HEIGHT - 50, 32, rl.BLACK)
+	max_size := max(rl.MeasureText(clevel, FONT_SIZE), rl.MeasureText(chp, FONT_SIZE))
+	rl.DrawRectangleRec({6, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2}, {255, 255, 255, 135})
+	rl.DrawText(clevel, 10, HEIGHT - 100, FONT_SIZE, rl.BLACK)
+	rl.DrawText(chp, 10, HEIGHT - 50, FONT_SIZE, rl.BLACK)
 }
 
 draw_all_entities :: proc() {
@@ -221,11 +224,13 @@ draw_countdown_text :: proc() {
 		text := fmt.ctprintf("%d", secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
+		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, {255, 255, 255, 135})
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	} else {
 		text := fmt.ctprintf("%d:%2d", mins, secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
+		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, {255, 255, 255, 135})
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	}
 }
