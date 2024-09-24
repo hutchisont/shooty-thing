@@ -9,7 +9,8 @@ import rl "vendor:raylib"
 
 WIDTH :: 720
 HEIGHT :: 1280
-GAME_DURATION_SEC :: 60 * 5
+GAME_DURATION_FAST :: 60 * 5
+GAME_DURATION_LONG :: 60 * 10
 
 GameState :: enum {
 	MainMenu,
@@ -175,14 +176,14 @@ set_initial_game_state :: proc() {
 		.FireRate       = "to upgrade fire rate",
 		.Damage         = "to upgrade damage",
 		.MoveSpeed      = "to upgrade move speed",
-		.BulletSpeed    = "to upgrade bullet speed",
+		.BulletSpeed    = "to upgrade projectile speed",
 	}
 }
 
 check_win_state :: proc() {
 	if TheGame.player.health > 0 &&
 	   TheGame.state == .Running &&
-	   TheGame.game_time >= GAME_DURATION_SEC {
+	   TheGame.game_time >= GAME_DURATION_FAST {
 		TheGame.state = .Won
 	}
 }
@@ -192,7 +193,10 @@ draw_player_status :: proc() {
 	clevel := fmt.ctprintf("Lvl: %d", TheGame.player.level)
 	chp := fmt.ctprintf("Hp: %d", TheGame.player.health)
 	max_size := max(rl.MeasureText(clevel, FONT_SIZE), rl.MeasureText(chp, FONT_SIZE))
-	rl.DrawRectangleRec({6, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2}, {255, 255, 255, 135})
+	rl.DrawRectangleRec(
+		{3, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2},
+		{255, 255, 255, 135},
+	)
 	rl.DrawText(clevel, 10, HEIGHT - 100, FONT_SIZE, rl.BLACK)
 	rl.DrawText(chp, 10, HEIGHT - 50, FONT_SIZE, rl.BLACK)
 }
@@ -215,7 +219,7 @@ secs_to_mins_and_secs :: proc(seconds: i32) -> (mins: i32, secs: i32) {
 
 draw_countdown_text :: proc() {
 	FONT_SIZE :: 48
-	remaining := i32(GAME_DURATION_SEC - TheGame.game_time)
+	remaining := i32(GAME_DURATION_FAST - TheGame.game_time)
 	if 0 == remaining {
 		return
 	}
@@ -224,13 +228,19 @@ draw_countdown_text :: proc() {
 		text := fmt.ctprintf("%d", secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
-		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, {255, 255, 255, 135})
+		rl.DrawRectangleRec(
+			{f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2},
+			{255, 255, 255, 135},
+		)
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	} else {
 		text := fmt.ctprintf("%d:%2d", mins, secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
-		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, {255, 255, 255, 135})
+		rl.DrawRectangleRec(
+			{f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2},
+			{255, 255, 255, 135},
+		)
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	}
 }
