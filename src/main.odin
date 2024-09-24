@@ -10,7 +10,22 @@ import rl "vendor:raylib"
 WIDTH :: 720
 HEIGHT :: 1280
 GAME_DURATION_FAST :: 60 * 5
-GAME_DURATION_LONG :: 60 * 10
+GAME_DURATION_MEDIUM :: 60 * 10
+GAME_DURATION_LONG :: 60 * 20
+
+Difficulty :: enum {
+	Easy,
+	Medium,
+	Hard,
+	Infinite,
+}
+
+Durations := [Difficulty]f32 {
+	.Easy     = GAME_DURATION_FAST,
+	.Medium   = GAME_DURATION_MEDIUM,
+	.Hard     = GAME_DURATION_LONG,
+	.Infinite = -1,
+}
 
 GameState :: enum {
 	MainMenu,
@@ -35,6 +50,7 @@ Game :: struct {
 	enemies:                  [dynamic]Enemy,
 	projectiles:              [dynamic]Projectile,
 	state:                    GameState,
+	difficulty:               Difficulty,
 	game_time:                f32,
 	spawn_accum_time:         f32,
 	special_spawn_accum_time: f32,
@@ -113,13 +129,29 @@ state_level_up :: proc() {
 
 state_main_menu :: proc() {
 	rl.DrawText("Main Menu", 100, 100, 42, rl.BLACK)
-	rl.DrawText("Press 1 to play", 125, 150, 32, rl.BLACK)
-	rl.DrawText("Press 2 to exit", 125, 200, 32, rl.BLACK)
+	rl.DrawText("Press 1 for easy ", 125, 150, 32, rl.BLACK)
+	rl.DrawText("Press 2 for medium", 125, 200, 32, rl.BLACK)
+	rl.DrawText("Press 3 for hard", 125, 250, 32, rl.BLACK)
+	rl.DrawText("Press 4 for infinite", 125, 300, 32, rl.BLACK)
+	rl.DrawText("Press 5 to exit", 125, 350, 32, rl.BLACK)
 
 	if rl.IsKeyReleased(.ONE) {
+		TheGame.difficulty = .Easy
 		TheGame.state = .Running
 	}
 	if rl.IsKeyReleased(.TWO) {
+		TheGame.difficulty = .Medium
+		TheGame.state = .Running
+	}
+	if rl.IsKeyReleased(.THREE) {
+		TheGame.difficulty = .Hard
+		TheGame.state = .Running
+	}
+	if rl.IsKeyReleased(.FOUR) {
+		TheGame.difficulty = .Infinite
+		TheGame.state = .Running
+	}
+	if rl.IsKeyReleased(.FIVE) {
 		TheGame.state = .Exit
 	}
 }
@@ -181,9 +213,10 @@ set_initial_game_state :: proc() {
 }
 
 check_win_state :: proc() {
-	if TheGame.player.health > 0 &&
-	   TheGame.state == .Running &&
-	   TheGame.game_time >= GAME_DURATION_FAST {
+	if .Infinite != TheGame.difficulty &&
+	   0 <= TheGame.player.health &&
+	   .Running == TheGame.state &&
+	   TheGame.game_time >= Durations[TheGame.difficulty] {
 		TheGame.state = .Won
 	}
 }
@@ -219,11 +252,16 @@ secs_to_mins_and_secs :: proc(seconds: i32) -> (mins: i32, secs: i32) {
 
 draw_countdown_text :: proc() {
 	FONT_SIZE :: 48
-	remaining := i32(GAME_DURATION_FAST - TheGame.game_time)
-	if 0 == remaining {
-		return
+	time_to_check: f32 = 0
+	if .Infinite == TheGame.difficulty {
+		time_to_check = TheGame.game_time
+	} else {
+		time_to_check = Durations[TheGame.difficulty] - TheGame.game_time
+		if 0 == time_to_check {
+			return
+		}
 	}
-	mins, secs := secs_to_mins_and_secs(remaining)
+	mins, secs := secs_to_mins_and_secs(i32(time_to_check))
 	if 0 == mins {
 		text := fmt.ctprintf("%d", secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
