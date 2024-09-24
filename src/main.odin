@@ -12,6 +12,7 @@ HEIGHT :: 1280
 GAME_DURATION_FAST :: 60 * 5
 GAME_DURATION_MEDIUM :: 60 * 10
 GAME_DURATION_LONG :: 60 * 20
+MENU_BG_COLOR: rl.Color : {255, 255, 255, 135}
 
 Difficulty :: enum {
 	Easy,
@@ -82,6 +83,7 @@ generate_random_level_options :: proc() {
 
 
 state_level_up :: proc() {
+	FONT_SIZE :: 32
 	if 0 == len(TheGame.level_up_options) {
 		generate_random_level_options()
 	}
@@ -100,9 +102,17 @@ state_level_up :: proc() {
 		TheGame.level_options_text[TheGame.level_up_options[2]],
 	)
 
-	rl.DrawText(options_text[0], 125, 150, 32, rl.BLACK)
-	rl.DrawText(options_text[1], 125, 200, 32, rl.BLACK)
-	rl.DrawText(options_text[2], 125, 250, 32, rl.BLACK)
+	text_width := max(
+		rl.MeasureText(options_text[0], FONT_SIZE),
+		rl.MeasureText(options_text[1], FONT_SIZE),
+		rl.MeasureText(options_text[2], FONT_SIZE),
+	)
+
+	rl.DrawRectangle((WIDTH - text_width - 20) / 2, 135, text_width + 40, 165, MENU_BG_COLOR)
+
+	rl.DrawText(options_text[0], (WIDTH - text_width) / 2, 150, FONT_SIZE, rl.BLACK)
+	rl.DrawText(options_text[1], (WIDTH - text_width) / 2, 200, FONT_SIZE, rl.BLACK)
+	rl.DrawText(options_text[2], (WIDTH - text_width) / 2, 250, FONT_SIZE, rl.BLACK)
 
 	handled_input := false
 	picked_index := -1
@@ -226,10 +236,7 @@ draw_player_status :: proc() {
 	clevel := fmt.ctprintf("Lvl: %d", TheGame.player.level)
 	chp := fmt.ctprintf("Hp: %d", TheGame.player.health)
 	max_size := max(rl.MeasureText(clevel, FONT_SIZE), rl.MeasureText(chp, FONT_SIZE))
-	rl.DrawRectangleRec(
-		{3, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2},
-		{255, 255, 255, 135},
-	)
+	rl.DrawRectangleRec({3, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2}, MENU_BG_COLOR)
 	rl.DrawText(clevel, 10, HEIGHT - 100, FONT_SIZE, rl.BLACK)
 	rl.DrawText(chp, 10, HEIGHT - 50, FONT_SIZE, rl.BLACK)
 }
@@ -266,19 +273,13 @@ draw_countdown_text :: proc() {
 		text := fmt.ctprintf("%d", secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
-		rl.DrawRectangleRec(
-			{f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2},
-			{255, 255, 255, 135},
-		)
+		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, MENU_BG_COLOR)
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	} else {
 		text := fmt.ctprintf("%d:%2d", mins, secs)
 		text_width := rl.MeasureText(text, FONT_SIZE)
 		x := (WIDTH - text_width) / 2
-		rl.DrawRectangleRec(
-			{f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2},
-			{255, 255, 255, 135},
-		)
+		rl.DrawRectangleRec({f32(x - 10), 20, f32(text_width + 20), FONT_SIZE + 2}, MENU_BG_COLOR)
 		rl.DrawText(text, x, 25, FONT_SIZE, rl.BLACK)
 	}
 }
