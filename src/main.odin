@@ -45,7 +45,6 @@ LevelOptions :: enum {
 	BulletSpeed,
 }
 
-
 Game :: struct {
 	player:                   Player,
 	enemies:                  [dynamic]Enemy,
@@ -80,7 +79,6 @@ generate_random_level_options :: proc() {
 		append(&TheGame.level_up_options, option)
 	}
 }
-
 
 state_level_up :: proc() {
 	FONT_SIZE :: 32
