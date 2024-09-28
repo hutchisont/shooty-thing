@@ -61,9 +61,12 @@ Game :: struct {
 TheGame := Game{}
 
 state_running :: proc() {
+	TheGame.game_time += rl.GetFrameTime()
 	tick_player()
 	tick_enemies()
 	tick_projectiles()
+	draw_countdown_text()
+	draw_player_status()
 }
 
 generate_random_level_options :: proc() {
@@ -81,6 +84,8 @@ generate_random_level_options :: proc() {
 }
 
 state_level_up :: proc() {
+	draw_all_entities()
+
 	FONT_SIZE :: 32
 	if 0 == len(TheGame.level_up_options) {
 		generate_random_level_options()
@@ -125,7 +130,6 @@ state_level_up :: proc() {
 		picked_index = 2
 	}
 
-
 	if handled_input {
 		apply_level_up_upgrade(TheGame.level_up_options[picked_index])
 		clear(&TheGame.level_up_options)
@@ -133,6 +137,8 @@ state_level_up :: proc() {
 			TheGame.state = .Running
 		}
 	}
+	draw_countdown_text()
+	draw_player_status()
 }
 
 state_main_menu :: proc() {
@@ -175,6 +181,7 @@ state_won :: proc() {
 	if rl.IsKeyReleased(.TWO) {
 		TheGame.state = .Exit
 	}
+	draw_player_status()
 }
 
 state_lost :: proc() {
@@ -188,6 +195,7 @@ state_lost :: proc() {
 	if rl.IsKeyReleased(.TWO) {
 		TheGame.state = .Exit
 	}
+	draw_player_status()
 }
 
 reset_game_state :: proc() {
@@ -286,7 +294,7 @@ main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
 
-	rl.InitWindow(WIDTH, HEIGHT, "SIC")
+	rl.InitWindow(WIDTH, HEIGHT, "Shooty Thing")
 	defer rl.CloseWindow()
 
 	rl.SetWindowPosition(WIDTH * 2, HEIGHT / 2)
@@ -306,23 +314,15 @@ main :: proc() {
 		case .MainMenu:
 			state_main_menu()
 		case .Running:
-			TheGame.game_time += rl.GetFrameTime()
 			state_running()
-			draw_countdown_text()
 		case .LevelUp:
-			draw_all_entities()
 			state_level_up()
-			draw_countdown_text()
 		case .Won:
 			state_won()
 		case .Lost:
 			state_lost()
 		case .Exit:
 			return
-		}
-
-		if TheGame.state != .MainMenu {
-			draw_player_status()
 		}
 
 		rl.DrawFPS(2, 2)
