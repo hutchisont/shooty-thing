@@ -248,13 +248,13 @@ draw_player_status :: proc() {
 }
 
 draw_all_entities :: proc() {
+	draw_player(&TheGame.player)
 	for &e in TheGame.enemies {
 		draw_enemy(&e)
 	}
 	for &p in TheGame.projectiles {
 		draw_projectile(&p)
 	}
-	draw_player(&TheGame.player)
 }
 
 secs_to_mins_and_secs :: proc(seconds: i32) -> (mins: i32, secs: i32) {
