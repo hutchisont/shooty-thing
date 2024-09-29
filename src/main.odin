@@ -344,7 +344,11 @@ main :: proc() {
 			return
 		}
 
-		rl.DrawFPS(2, 2)
+		FPS_FONT_SIZE :: 26
+		fps := rl.GetFPS()
+		clvl := fmt.ctprintf("%d", fps)
+		clvl_width := rl.MeasureText(clvl, FPS_FONT_SIZE)
+		rl.DrawText(clvl, WIDTH - clvl_width - 5, 2, FPS_FONT_SIZE, rl.DARKGREEN)
 		rl.EndDrawing()
 	}
 }
