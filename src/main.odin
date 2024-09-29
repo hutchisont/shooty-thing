@@ -309,6 +309,14 @@ draw_countdown_text :: proc() {
 	}
 }
 
+draw_fps :: proc() {
+	FPS_FONT_SIZE :: 26
+	fps := rl.GetFPS()
+	clvl := fmt.ctprintf("%d", fps)
+	clvl_width := rl.MeasureText(clvl, FPS_FONT_SIZE)
+	rl.DrawText(clvl, WIDTH - clvl_width - 5, 2, FPS_FONT_SIZE, rl.DARKGREEN)
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
@@ -344,11 +352,7 @@ main :: proc() {
 			return
 		}
 
-		FPS_FONT_SIZE :: 26
-		fps := rl.GetFPS()
-		clvl := fmt.ctprintf("%d", fps)
-		clvl_width := rl.MeasureText(clvl, FPS_FONT_SIZE)
-		rl.DrawText(clvl, WIDTH - clvl_width - 5, 2, FPS_FONT_SIZE, rl.DARKGREEN)
+		draw_fps()
 		rl.EndDrawing()
 	}
 }
