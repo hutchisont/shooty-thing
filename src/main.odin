@@ -245,7 +245,7 @@ draw_player_status :: proc() {
 	rl.DrawText(clevel, 3, 3, FONT_SIZE, rl.BLACK)
 
 	hp := rl.Rectangle{3, 32, WIDTH / 3, 10}
-	lvl := rl.Rectangle{3, 48, WIDTH / 3, 10}
+	lvl := rl.Rectangle{3, 45, WIDTH / 3, 10}
 	rl.DrawRectangleLines(
 		c.int(hp.x) - 1,
 		c.int(hp.y) - 1,
