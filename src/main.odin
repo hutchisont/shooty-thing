@@ -1,5 +1,6 @@
 package main
 
+import "core:c"
 import "core:fmt"
 import "core:math/rand"
 import "core:strconv"
@@ -230,7 +231,7 @@ set_initial_game_state :: proc() {
 
 check_win_state :: proc() {
 	if .Infinite != TheGame.difficulty &&
-	   0 <= TheGame.player.health &&
+	   0 <= TheGame.player.cur_health &&
 	   .Running == TheGame.state &&
 	   TheGame.game_time >= Durations[TheGame.difficulty] {
 		TheGame.state = .Won
@@ -240,11 +241,29 @@ check_win_state :: proc() {
 draw_player_status :: proc() {
 	FONT_SIZE :: 32
 	clevel := fmt.ctprintf("Lvl: %d", TheGame.player.level)
-	chp := fmt.ctprintf("Hp: %d", TheGame.player.health)
-	max_size := max(rl.MeasureText(clevel, FONT_SIZE), rl.MeasureText(chp, FONT_SIZE))
-	rl.DrawRectangleRec({3, HEIGHT - 110, f32(max_size + 15), (FONT_SIZE + 20) * 2}, MENU_BG_COLOR)
-	rl.DrawText(clevel, 10, HEIGHT - 100, FONT_SIZE, rl.BLACK)
-	rl.DrawText(chp, 10, HEIGHT - 50, FONT_SIZE, rl.BLACK)
+	max_size := rl.MeasureText(clevel, FONT_SIZE)
+	rl.DrawText(clevel, 3, 3, FONT_SIZE, rl.BLACK)
+
+	hp := rl.Rectangle{3, 32, WIDTH / 3, 10}
+	lvl := rl.Rectangle{3, 48, WIDTH / 3, 10}
+	rl.DrawRectangleLines(
+		c.int(hp.x) - 1,
+		c.int(hp.y) - 1,
+		c.int(hp.width) + 2,
+		c.int(hp.height) + 2,
+		rl.BLACK,
+	)
+	rl.DrawRectangleLines(
+		c.int(lvl.x) - 1,
+		c.int(lvl.y) - 1,
+		c.int(lvl.width) + 2,
+		c.int(lvl.height) + 2,
+		rl.BLACK,
+	)
+	hp_percent: f32 = f32(TheGame.player.cur_health) / f32(TheGame.player.max_health)
+	rl.DrawRectangleRec({hp.x, hp.y, (hp.width * hp_percent), hp.height}, rl.RED)
+	lvl_percent: f32 = f32(TheGame.player.cur_exp) / f32(TheGame.player.exp_to_level)
+	rl.DrawRectangleRec({lvl.x, lvl.y, (lvl.width * lvl_percent), lvl.height}, rl.PURPLE)
 }
 
 draw_all_entities :: proc() {

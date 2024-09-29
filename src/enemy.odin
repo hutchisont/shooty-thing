@@ -49,7 +49,7 @@ create_speedy_enemy :: proc() -> Enemy {
 
 tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool, killed_by_player: bool) {
 	if enemy.body.y >= HEIGHT {
-		TheGame.player.health -= enemy.damage
+		TheGame.player.cur_health -= enemy.damage
 		return false, false
 	} else if enemy.health <= 0 {
 		return false, true

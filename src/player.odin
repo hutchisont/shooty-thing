@@ -4,7 +4,8 @@ import rl "vendor:raylib"
 
 Player :: struct {
 	body:                      rl.Rectangle,
-	health:                    i32,
+	max_health:                i32,
+	cur_health:                i32,
 	speed:                     f32,
 	accumulated_time:          f32,
 	projectile_size_mult:      f32,
@@ -20,7 +21,8 @@ Player :: struct {
 create_player :: proc() -> Player {
 	return Player {
 		body = {WIDTH - 100, HEIGHT - 100, 50, 50},
-		health = 100,
+		max_health = 100,
+		cur_health = 100,
 		speed = 200,
 		exp_to_level = 75,
 		projectile_fire_threshold = 0.5,
@@ -84,7 +86,7 @@ tick_player :: proc() {
 		pl.body.x = min(pl.body.x + (pl.speed * frame_time), WIDTH - (pl.body.width + 8))
 	}
 
-	if pl.health <= 0 {
+	if pl.cur_health <= 0 {
 		TheGame.state = .Lost
 	}
 
