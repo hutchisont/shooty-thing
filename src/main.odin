@@ -261,9 +261,11 @@ draw_player_status :: proc() {
 		rl.BLACK,
 	)
 	hp_percent: f32 = f32(TheGame.player.cur_health) / f32(TheGame.player.max_health)
-	rl.DrawRectangleRec({hp.x, hp.y, (hp.width * hp_percent), hp.height}, rl.RED)
+	TheGame.player.display_health = rl.Lerp(TheGame.player.display_health, hp.width * hp_percent, .1)
+	rl.DrawRectangleRec({hp.x, hp.y, TheGame.player.display_health, hp.height}, rl.RED)
 	lvl_percent: f32 = f32(TheGame.player.cur_exp) / f32(TheGame.player.exp_to_level)
-	rl.DrawRectangleRec({lvl.x, lvl.y, (lvl.width * lvl_percent), lvl.height}, rl.PURPLE)
+	TheGame.player.display_exp = rl.Lerp(TheGame.player.display_exp, lvl.width * lvl_percent, .1)
+	rl.DrawRectangleRec({lvl.x, lvl.y, TheGame.player.display_exp, lvl.height}, rl.PURPLE)
 }
 
 draw_all_entities :: proc() {
