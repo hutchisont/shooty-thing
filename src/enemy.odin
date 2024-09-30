@@ -12,7 +12,7 @@ Enemy :: struct {
 }
 
 create_basic_enemy :: proc() -> Enemy {
-	spawn_x := rl.GetRandomValue(10, WIDTH - 35)
+	spawn_x := rl.GetRandomValue(15, WIDTH - 35)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 25, 25},
 		color = rl.RED,
@@ -24,7 +24,7 @@ create_basic_enemy :: proc() -> Enemy {
 }
 
 create_beefy_enemy :: proc() -> Enemy {
-	spawn_x := rl.GetRandomValue(10, WIDTH - 110)
+	spawn_x := rl.GetRandomValue(20, WIDTH - 120)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 100, 75},
 		color = rl.YELLOW,
@@ -36,7 +36,7 @@ create_beefy_enemy :: proc() -> Enemy {
 }
 
 create_speedy_enemy :: proc() -> Enemy {
-	spawn_x := rl.GetRandomValue(10, WIDTH - 10)
+	spawn_x := rl.GetRandomValue(30, WIDTH - 30)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 15, 45},
 		color = rl.BLUE,
