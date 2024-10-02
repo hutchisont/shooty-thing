@@ -73,6 +73,7 @@ gain_exp_player :: proc(exp: u32) {
 	pl.cur_exp += exp
 	for pl.cur_exp > pl.exp_to_level {
 		pl.cur_exp -= pl.exp_to_level
+		pl.exp_to_level = u32(f32(pl.exp_to_level) * 1.05)
 		level_up_player()
 	}
 }
