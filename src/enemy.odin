@@ -2,6 +2,8 @@ package main
 
 import rl "vendor:raylib"
 
+BASE_SPAWN_TIME :: 1.75
+
 Enemy :: struct {
 	body:      rl.Rectangle,
 	color:     rl.Color,
@@ -72,15 +74,14 @@ tick_enemies :: proc() {
 		}
 	}
 
-	spawn_time :: 1.75
-	special_spawn_time :: spawn_time * 7
-
+	special_spawn_time := TheGame.spawn_time * 7
 	frame_time := rl.GetFrameTime()
 
 	TheGame.spawn_accum_time += frame_time
 	TheGame.special_spawn_accum_time += frame_time
+	TheGame.spawn_increase_timer += frame_time
 
-	if TheGame.spawn_accum_time >= spawn_time {
+	if TheGame.spawn_accum_time >= TheGame.spawn_time {
 		TheGame.spawn_accum_time = 0
 		append(&TheGame.enemies, create_basic_enemy())
 	}
@@ -88,6 +89,13 @@ tick_enemies :: proc() {
 		TheGame.special_spawn_accum_time = 0
 		append(&TheGame.enemies, create_beefy_enemy())
 		append(&TheGame.enemies, create_speedy_enemy())
+	}
+
+	// every minute 10% faster spawns
+	should_increase_spawn_rate := u32(TheGame.spawn_increase_timer) >= 60
+	if should_increase_spawn_rate {
+		TheGame.spawn_time *= .90
+		TheGame.spawn_increase_timer = 0
 	}
 }
 

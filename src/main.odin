@@ -53,6 +53,8 @@ Game :: struct {
 	state:                    GameState,
 	difficulty:               Difficulty,
 	game_time:                f32,
+	spawn_time:               f32,
+	spawn_increase_timer:     f32,
 	spawn_accum_time:         f32,
 	special_spawn_accum_time: f32,
 	level_up_options:         [dynamic]LevelOptions,
@@ -206,6 +208,8 @@ reset_game_state :: proc() {
 
 	TheGame.player = create_player()
 	TheGame.state = .Running
+	TheGame.spawn_time = BASE_SPAWN_TIME
+	TheGame.spawn_increase_timer = 0
 	TheGame.game_time = 0
 	TheGame.spawn_accum_time = 0
 	TheGame.special_spawn_accum_time = 0
@@ -227,6 +231,7 @@ set_initial_game_state :: proc() {
 		.MoveSpeed      = "to upgrade move speed",
 		.BulletSpeed    = "to upgrade projectile speed",
 	}
+	TheGame.spawn_time = BASE_SPAWN_TIME
 }
 
 check_win_state :: proc() {
@@ -261,7 +266,11 @@ draw_player_status :: proc() {
 		rl.BLACK,
 	)
 	hp_percent: f32 = f32(TheGame.player.cur_health) / f32(TheGame.player.max_health)
-	TheGame.player.display_health = rl.Lerp(TheGame.player.display_health, hp.width * hp_percent, .1)
+	TheGame.player.display_health = rl.Lerp(
+		TheGame.player.display_health,
+		hp.width * hp_percent,
+		.1,
+	)
 	rl.DrawRectangleRec({hp.x, hp.y, TheGame.player.display_health, hp.height}, rl.RED)
 	lvl_percent: f32 = f32(TheGame.player.cur_exp) / f32(TheGame.player.exp_to_level)
 	TheGame.player.display_exp = rl.Lerp(TheGame.player.display_exp, lvl.width * lvl_percent, .1)
