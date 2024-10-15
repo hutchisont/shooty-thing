@@ -1,8 +1,10 @@
 package main
 
 import "core:c"
+import "core:encoding/cbor"
 import "core:fmt"
 import "core:math/rand"
+import "core:os/os2"
 import "core:strconv"
 import "core:strings"
 import "core:time"
@@ -14,6 +16,15 @@ GAME_DURATION_FAST :: 60 * 5
 GAME_DURATION_MEDIUM :: 60 * 10
 GAME_DURATION_LONG :: 60 * 20
 MENU_BG_COLOR: rl.Color : {255, 255, 255, 135}
+
+SAVE_FILE_PATH :: "/tmp/shooty-thing.txt"
+
+PersistentData :: struct {
+	initial_window_x: f32,
+	initial_window_y: f32,
+}
+
+SaveData := PersistentData{WIDTH * 2, HEIGHT / 2}
 
 Difficulty :: enum {
 	Easy,
@@ -328,19 +339,57 @@ draw_fps :: proc() {
 	rl.DrawText(clvl, WIDTH - clvl_width - 5, 2, FPS_FONT_SIZE, rl.DARKGREEN)
 }
 
+save_game :: proc() {
+	pos := rl.GetWindowPosition()
+	SaveData.initial_window_x = pos.x
+	SaveData.initial_window_y = pos.y
+
+	binary, err := cbor.marshal(SaveData, cbor.ENCODE_FULLY_DETERMINISTIC)
+	fmt.assertf(err == nil, "marshal error: %v", err)
+	defer delete(binary)
+
+	save_file, ferr := os2.open(SAVE_FILE_PATH, {.Write, .Create})
+	if ferr != nil {
+		fmt.printf("failed to open save file: %v", ferr)
+		return
+	}
+
+	os2.write(save_file, binary)
+}
+
+load_game :: proc() {
+	if !os2.exists(SAVE_FILE_PATH) {
+		return
+	}
+
+	binary, err := os2.read_entire_file_from_path(SAVE_FILE_PATH, context.allocator)
+	if err != nil {
+		fmt.printf("failed to read save file: %v", err)
+		return
+	}
+	defer delete(binary)
+
+	merr := cbor.unmarshal(string(binary), &SaveData)
+	if merr != nil {
+		fmt.printf("failed to unmarshal save file: %v", merr)
+	}
+}
+
 main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
 
+	load_game()
+
 	rl.InitWindow(WIDTH, HEIGHT, "Shooty Thing")
 	defer rl.CloseWindow()
 
-	rl.SetWindowPosition(WIDTH * 2, HEIGHT / 2)
+	rl.SetWindowPosition(i32(SaveData.initial_window_x), i32(SaveData.initial_window_y))
 	rl.SetTargetFPS(144)
 
 	set_initial_game_state()
 
-	for !rl.WindowShouldClose() {
+	main_loop: for !rl.WindowShouldClose() {
 		free_all(context.temp_allocator)
 
 		rl.BeginDrawing()
@@ -360,7 +409,9 @@ main :: proc() {
 		case .Lost:
 			state_lost()
 		case .Exit:
-			return
+			// well I say save game but just winodw location for now
+			save_game()
+			break main_loop
 		}
 
 		draw_fps()
