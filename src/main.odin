@@ -66,6 +66,7 @@ Game :: struct {
 	game_time:                f32,
 	spawn_time:               f32,
 	spawn_increase_timer:     f32,
+	big_spawn_increase_timer: f32,
 	spawn_accum_time:         f32,
 	special_spawn_accum_time: f32,
 	level_up_options:         [dynamic]LevelOptions,
@@ -221,6 +222,7 @@ reset_game_state :: proc() {
 	TheGame.state = .Running
 	TheGame.spawn_time = BASE_SPAWN_TIME
 	TheGame.spawn_increase_timer = 0
+	TheGame.big_spawn_increase_timer = 0
 	TheGame.game_time = 0
 	TheGame.spawn_accum_time = 0
 	TheGame.special_spawn_accum_time = 0

@@ -80,6 +80,7 @@ tick_enemies :: proc() {
 	TheGame.spawn_accum_time += frame_time
 	TheGame.special_spawn_accum_time += frame_time
 	TheGame.spawn_increase_timer += frame_time
+	TheGame.big_spawn_increase_timer += frame_time
 
 	if TheGame.spawn_accum_time >= TheGame.spawn_time {
 		TheGame.spawn_accum_time = 0
@@ -96,6 +97,13 @@ tick_enemies :: proc() {
 	if should_increase_spawn_rate {
 		TheGame.spawn_time *= .90
 		TheGame.spawn_increase_timer = 0
+	}
+
+	// every five minutes extra 25% faster spawns
+	should_big_increase_spawn_rate := u32(TheGame.big_spawn_increase_timer) >= 60 * 5
+	if should_increase_spawn_rate {
+		TheGame.spawn_time *= .75
+		TheGame.big_spawn_increase_timer = 0
 	}
 }
 
