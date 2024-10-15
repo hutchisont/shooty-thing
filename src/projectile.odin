@@ -13,7 +13,7 @@ Projectile :: struct {
 	damage: f32,
 }
 
-create_projectile :: proc() -> Projectile {
+projectile_create :: proc() -> Projectile {
 	width := base_size.x * TheGame.player.projectile_size_mult
 	centered_x := (TheGame.player.body.x + (TheGame.player.body.width / 2)) - (width / 2)
 	return Projectile {
@@ -29,7 +29,7 @@ create_projectile :: proc() -> Projectile {
 	}
 }
 
-tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
+projectile_tick :: proc(projectile: ^Projectile) -> (alive: bool) {
 	if projectile.body.y < 0 {
 		return false
 	} else {
@@ -46,16 +46,16 @@ tick_projectile :: proc(projectile: ^Projectile) -> (alive: bool) {
 	return true
 }
 
-tick_projectiles :: proc() {
+projectile_tick_all :: proc() {
 	#reverse for &projectile, index in TheGame.projectiles {
-		if tick_projectile(&projectile) {
-			draw_projectile(&projectile)
+		if projectile_tick(&projectile) {
+			projectile_draw(&projectile)
 		} else {
 			unordered_remove(&TheGame.projectiles, index)
 		}
 	}
 }
 
-draw_projectile :: proc(projectile: ^Projectile) {
+projectile_draw :: proc(projectile: ^Projectile) {
 	rl.DrawRectangleRec(projectile.body, projectile.color)
 }

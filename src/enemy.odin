@@ -13,7 +13,7 @@ Enemy :: struct {
 	exp_value: u32,
 }
 
-create_basic_enemy :: proc() -> Enemy {
+enemy_create_basic :: proc() -> Enemy {
 	spawn_x := rl.GetRandomValue(15, WIDTH - 35)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 25, 25},
@@ -25,7 +25,7 @@ create_basic_enemy :: proc() -> Enemy {
 	}
 }
 
-create_beefy_enemy :: proc() -> Enemy {
+enemy_create_beefy :: proc() -> Enemy {
 	spawn_x := rl.GetRandomValue(20, WIDTH - 120)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 100, 75},
@@ -37,7 +37,7 @@ create_beefy_enemy :: proc() -> Enemy {
 	}
 }
 
-create_speedy_enemy :: proc() -> Enemy {
+enemy_create_speedy :: proc() -> Enemy {
 	spawn_x := rl.GetRandomValue(30, WIDTH - 30)
 	return Enemy {
 		body = rl.Rectangle{f32(spawn_x), 0, 15, 45},
@@ -49,7 +49,7 @@ create_speedy_enemy :: proc() -> Enemy {
 	}
 }
 
-tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool, killed_by_player: bool) {
+enemy_tick :: proc(enemy: ^Enemy) -> (alive: bool, killed_by_player: bool) {
 	if enemy.body.y >= HEIGHT {
 		TheGame.player.cur_health -= enemy.damage
 		return false, false
@@ -61,14 +61,14 @@ tick_enemy :: proc(enemy: ^Enemy) -> (alive: bool, killed_by_player: bool) {
 	}
 }
 
-tick_enemies :: proc() {
+enemy_tick_all :: proc() {
 	#reverse for &enemy, index in TheGame.enemies {
-		alive, killed_by_player := tick_enemy(&enemy)
+		alive, killed_by_player := enemy_tick(&enemy)
 		if alive {
-			draw_enemy(&enemy)
+			enemy_draw(&enemy)
 		} else {
 			if killed_by_player {
-				gain_exp_player(enemy.exp_value)
+				player_gain_exp(enemy.exp_value)
 			}
 			unordered_remove(&TheGame.enemies, index)
 		}
@@ -84,12 +84,12 @@ tick_enemies :: proc() {
 
 	if TheGame.spawn_accum_time >= TheGame.spawn_time {
 		TheGame.spawn_accum_time = 0
-		append(&TheGame.enemies, create_basic_enemy())
+		append(&TheGame.enemies, enemy_create_basic())
 	}
 	if TheGame.special_spawn_accum_time >= special_spawn_time {
 		TheGame.special_spawn_accum_time = 0
-		append(&TheGame.enemies, create_beefy_enemy())
-		append(&TheGame.enemies, create_speedy_enemy())
+		append(&TheGame.enemies, enemy_create_beefy())
+		append(&TheGame.enemies, enemy_create_speedy())
 	}
 
 	// every minute 10% faster spawns
@@ -107,6 +107,6 @@ tick_enemies :: proc() {
 	}
 }
 
-draw_enemy :: proc(enemy: ^Enemy) {
+enemy_draw :: proc(enemy: ^Enemy) {
 	rl.DrawRectangleRec(enemy.body, enemy.color)
 }

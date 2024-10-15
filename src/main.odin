@@ -77,9 +77,9 @@ TheGame := Game{}
 
 state_running :: proc() {
 	TheGame.game_time += rl.GetFrameTime()
-	tick_player()
-	tick_enemies()
-	tick_projectiles()
+	player_tick()
+	enemy_tick_all()
+	projectile_tick_all()
 	draw_countdown_text()
 	draw_player_status()
 }
@@ -99,7 +99,7 @@ generate_random_level_options :: proc() {
 }
 
 state_level_up :: proc() {
-	draw_all_entities()
+	entities_draw_all()
 
 	FONT_SIZE :: 32
 	if 0 == len(TheGame.level_up_options) {
@@ -218,7 +218,7 @@ reset_game_state :: proc() {
 	clear(&TheGame.projectiles)
 	clear(&TheGame.level_up_options)
 
-	TheGame.player = create_player()
+	TheGame.player = player_create()
 	TheGame.state = .Running
 	TheGame.spawn_time = BASE_SPAWN_TIME
 	TheGame.spawn_increase_timer = 0
@@ -232,7 +232,7 @@ set_initial_game_state :: proc() {
 	now := time.now()
 	rl.SetRandomSeed(u32(time.to_unix_seconds(now)))
 
-	TheGame.player = create_player()
+	TheGame.player = player_create()
 	TheGame.enemies = make([dynamic]Enemy)
 	TheGame.projectiles = make([dynamic]Projectile)
 	TheGame.state = .MainMenu
@@ -290,13 +290,13 @@ draw_player_status :: proc() {
 	rl.DrawRectangleRec({lvl.x, lvl.y, TheGame.player.display_exp, lvl.height}, rl.PURPLE)
 }
 
-draw_all_entities :: proc() {
-	draw_player(&TheGame.player)
+entities_draw_all :: proc() {
+	player_draw(&TheGame.player)
 	for &e in TheGame.enemies {
-		draw_enemy(&e)
+		enemy_draw(&e)
 	}
 	for &p in TheGame.projectiles {
-		draw_projectile(&p)
+		projectile_draw(&p)
 	}
 }
 

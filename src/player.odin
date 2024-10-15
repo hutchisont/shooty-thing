@@ -20,7 +20,7 @@ Player :: struct {
 	pending_levels:            u32,
 }
 
-create_player :: proc() -> Player {
+player_create :: proc() -> Player {
 	return Player {
 		body = {WIDTH - 100, HEIGHT - 100, 50, 50},
 		max_health = 100,
@@ -35,7 +35,7 @@ create_player :: proc() -> Player {
 	}
 }
 
-level_up_player :: proc() {
+player_level_up :: proc() {
 	pl := &TheGame.player
 
 	pl.pending_levels += 1
@@ -68,17 +68,17 @@ apply_level_up_upgrade :: proc(upg: LevelOptions) {
 	pl.level += 1
 }
 
-gain_exp_player :: proc(exp: u32) {
+player_gain_exp :: proc(exp: u32) {
 	pl := &TheGame.player
 	pl.cur_exp += exp
 	for pl.cur_exp > pl.exp_to_level {
 		pl.cur_exp -= pl.exp_to_level
 		pl.exp_to_level = u32(f32(pl.exp_to_level) * 1.05)
-		level_up_player()
+		player_level_up()
 	}
 }
 
-tick_player :: proc() {
+player_tick :: proc() {
 	pl := &TheGame.player
 
 	frame_time := rl.GetFrameTime()
@@ -95,14 +95,14 @@ tick_player :: proc() {
 
 	pl.accumulated_time += frame_time
 	if pl.accumulated_time > pl.projectile_fire_threshold {
-		append(&TheGame.projectiles, create_projectile())
+		append(&TheGame.projectiles, projectile_create())
 		pl.accumulated_time = 0
 	}
 
-	draw_player(pl)
+	player_draw(pl)
 }
 
-draw_player :: proc(player: ^Player) {
+player_draw :: proc(player: ^Player) {
 	center := player.body.x + (player.body.width / 2)
 	rl.DrawLineEx({center, player.body.y}, {center, HEIGHT / 5}, 3, {0, 0, 0, 55})
 	rl.DrawRectangleRec(player.body, rl.GREEN)
