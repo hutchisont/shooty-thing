@@ -5,6 +5,7 @@ import "core:encoding/cbor"
 import "core:fmt"
 import "core:math/rand"
 import "core:os/os2"
+import "core:path/filepath"
 import "core:strconv"
 import "core:strings"
 import "core:time"
@@ -17,7 +18,22 @@ GAME_DURATION_MEDIUM :: 60 * 10
 GAME_DURATION_LONG :: 60 * 20
 MENU_BG_COLOR: rl.Color : {255, 255, 255, 135}
 
-SAVE_FILE_PATH :: "/tmp/shooty-thing.txt"
+@(require_results)
+get_save_file_path :: proc() -> (dir: string, ok: bool) {
+	config_dir, err := os2.user_config_dir(context.allocator)
+	if err != nil {
+		fmt.println("%v: failed to get user config directory: %v", #procedure, err)
+		return "", false
+	}
+
+	save_path, cerr := strings.concatenate({config_dir, "/shooty-thing/shooty-thing.txt"})
+	if cerr != nil {
+		fmt.println("%v: failed to create save path: %v", #procedure, err)
+		return "", false
+	}
+
+	return save_path, true
+}
 
 PersistentData :: struct {
 	initial_window_x: f32,
@@ -300,6 +316,7 @@ entities_draw_all :: proc() {
 	}
 }
 
+@(require_results)
 secs_to_mins_and_secs :: proc(seconds: i32) -> (mins: i32, secs: i32) {
 	secs = seconds % 60
 	mins = i32(seconds / 60)
@@ -347,33 +364,63 @@ save_game :: proc() {
 	SaveData.initial_window_y = pos.y
 
 	binary, err := cbor.marshal(SaveData, cbor.ENCODE_FULLY_DETERMINISTIC)
-	fmt.assertf(err == nil, "marshal error: %v", err)
-	defer delete(binary)
-
-	save_file, ferr := os2.open(SAVE_FILE_PATH, {.Write, .Create})
-	if ferr != nil {
-		fmt.printf("failed to open save file: %v", ferr)
+	if err != nil {
+		fmt.printfln("%v: marshal error: %v", #procedure, err)
 		return
 	}
+	defer delete(binary)
+
+	save_file_path, ok := get_save_file_path()
+	if !ok {
+		fmt.printfln("%v: could not get save file path", #procedure)
+		return
+	}
+	defer delete(save_file_path)
+
+	save_file, ferr := os2.open(save_file_path, {.Write, .Create})
+	if ferr != nil {
+		fmt.printfln("%v: failed to open save file: %v", #procedure, ferr)
+		return
+	}
+	defer os2.close(save_file)
 
 	os2.write(save_file, binary)
 }
 
 load_game :: proc() {
-	if !os2.exists(SAVE_FILE_PATH) {
+	save_file_path, ok := get_save_file_path()
+	if !ok {
+		fmt.printfln("%v: failed to get save file path", #procedure)
+		return
+	}
+	defer delete(save_file_path)
+
+	if !os2.exists(save_file_path) {
 		return
 	}
 
-	binary, err := os2.read_entire_file_from_path(SAVE_FILE_PATH, context.allocator)
+	binary, err := os2.read_entire_file_from_path(save_file_path, context.allocator)
 	if err != nil {
-		fmt.printf("failed to read save file: %v", err)
+		fmt.printfln("%v: failed to read save file: %v", #procedure, err)
 		return
 	}
 	defer delete(binary)
 
 	merr := cbor.unmarshal(string(binary), &SaveData)
 	if merr != nil {
-		fmt.printf("failed to unmarshal save file: %v", merr)
+		fmt.printfln("%v: failed to unmarshal save file: %v", #procedure, merr)
+	}
+}
+
+ensure_necessary_directories_exist :: proc() {
+	save_file_path, ok := get_save_file_path()
+	fmt.assertf(ok == true, "%v: failed to get save file path", #procedure)
+	defer delete(save_file_path)
+
+	directory := filepath.dir(save_file_path)
+	err := os2.mkdir_all(directory)
+	if err != nil && err != .Exist {
+		fmt.assertf(false, "%v: failed creating user data directory: %v", #procedure, err)
 	}
 }
 
@@ -381,6 +428,7 @@ main :: proc() {
 	rl.SetTraceLogLevel(.ERROR)
 	rl.SetConfigFlags({.MSAA_4X_HINT, .VSYNC_HINT})
 
+	ensure_necessary_directories_exist()
 	load_game()
 
 	rl.InitWindow(WIDTH, HEIGHT, "Shooty Thing")
