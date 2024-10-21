@@ -1,7 +1,5 @@
 * Real buttons instead of "Press 1 for choice"
 * Pause screen
-* Persist save file between boots
-    * essentially, don't just shove the file in /tmp, pick a persistent location
 * Player HP regen
 * More player weapons
 * More enemies
